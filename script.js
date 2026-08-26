@@ -230,10 +230,34 @@ function escolhaJogador() {
       (jogador) => jogador.id == escolha,
     );
 
-    if (jogadoreEscolhido) {
-      escalacao.push(jogadoreEscolhido);
+    while (!jogadoreEscolhido) {
+      escolha = prompt("ID nao existe, digite denovo: ");
+
+      jogadoreEscolhido = time.jogadores.find(
+        (jogador) => jogador.id == escolha,
+      );
     }
+
+    escalacao.push(jogadoreEscolhido);
   }
+  const ordemPosicoes = ["GOL", "ZAG", "LAT", "VOL", "MEI", "ATA"];
+
+  escalacao.sort((a, b) => {
+    return ordemPosicoes.indexOf(a.posicao) - ordemPosicoes.indexOf(b.posicao);
+  });
+
+  // for (let i = 0; i < escalacao.length; i++) {
+  //   for (let j = 0; j < escalacao.length - 1; j++) {
+  //     let atual = ordemPosicoes.indexOf(escalacao[j].posicao);
+  //     let next = ordemPosicoes.indexOf(escalacao[j + 1].posicao);
+
+  //     if (atual > next) {
+  //       let aux = escalacao[j];
+  //       escalacao[j] = escalacao[j + 1];
+  //       escalacao[j + 1] = aux;
+  //     }
+  //   }
+  // }
 
   return escalacao;
 }
@@ -264,17 +288,17 @@ function timeContra() {
 
 function mostrarConsole() {
   let escalacao = escolhaJogador();
-  let mediaOver = calcMedia(escalacao);
+  let mediaOver = Math.round(calcMedia(escalacao));
   let textoFInal = formatarEscalacao(escalacao);
   let adversario = timeContra();
 
   console.log(
-    `Overall do seu time: ${Math.round(mediaOver)} 
+    `Overall do seu time: ${mediaOver} 
     // Escalação do seu time -------- 
     ${textoFInal.join("\n")}`,
   );
 
-  if (adversario.media > calcMedia(escalacao)) {
+  if (adversario.media > mediaOver) {
     console.log(
       "voce perdeu pro " +
         adversario.nome +
@@ -282,7 +306,7 @@ function mostrarConsole() {
         adversario.media +
         " de overall",
     );
-  } else if (adversario.media == calcMedia(escalacao)) {
+  } else if (adversario.media == mediaOver) {
     console.log(
       "empatou com " +
         adversario.nome +
