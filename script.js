@@ -224,6 +224,7 @@ function escolhaJogador() {
   while (escalacao.length < 11) {
     let time = sorteiaTime();
     console.log(time);
+    console.log(escalacao);
     let escolha = prompt("digite o ID do jogador: ");
 
     let jogadoreEscolhido = time.jogadores.find(
@@ -238,6 +239,16 @@ function escolhaJogador() {
       );
     }
 
+    let goleiroExiste = escalacao.some((jogador) => jogador.posicao == "GOL");
+
+    while (goleiroExiste && jogadoreEscolhido.posicao == "GOL") {
+      escolha = prompt("Ja existe um goleiro no time: ");
+
+      jogadoreEscolhido = time.jogadores.find(
+        (jogador) => jogador.id == escolha,
+      );
+    }
+
     escalacao.push(jogadoreEscolhido);
   }
   const ordemPosicoes = ["GOL", "ZAG", "LAT", "VOL", "MEI", "ATA"];
@@ -245,19 +256,6 @@ function escolhaJogador() {
   escalacao.sort((a, b) => {
     return ordemPosicoes.indexOf(a.posicao) - ordemPosicoes.indexOf(b.posicao);
   });
-
-  // for (let i = 0; i < escalacao.length; i++) {
-  //   for (let j = 0; j < escalacao.length - 1; j++) {
-  //     let atual = ordemPosicoes.indexOf(escalacao[j].posicao);
-  //     let next = ordemPosicoes.indexOf(escalacao[j + 1].posicao);
-
-  //     if (atual > next) {
-  //       let aux = escalacao[j];
-  //       escalacao[j] = escalacao[j + 1];
-  //       escalacao[j + 1] = aux;
-  //     }
-  //   }
-  // }
 
   return escalacao;
 }
