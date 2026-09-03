@@ -284,11 +284,30 @@ function timeContra() {
   return { nome: adversario.nome, media: mediaContra };
 }
 
+function probabilidadeVitoria(overallTimeA, overallTimeB) {
+  let diferenca = overallTimeA - overallTimeB;
+
+  const k = 0.11;
+
+  const probabilidadeA = 1 / (1 + Math.exp(-k * diferenca));
+
+  return probabilidadeA;
+}
+
+function calculoProbabilidade(mediaTime, mediaAdversario) {
+  const probA = probabilidadeVitoria(mediaTime, mediaAdversario);
+
+  const sorteio = Math.random();
+
+  return sorteio < probA;
+}
+
 function mostrarConsole() {
   let escalacao = escolhaJogador();
   let mediaOver = Math.round(calcMedia(escalacao));
   let textoFInal = formatarEscalacao(escalacao);
   let adversario = timeContra();
+  let vitoria = calculoProbabilidade(mediaOver, adversario.media);
 
   console.log(
     `Overall do seu time: ${mediaOver} 
@@ -296,23 +315,7 @@ function mostrarConsole() {
     ${textoFInal.join("\n")}`,
   );
 
-  if (adversario.media > mediaOver) {
-    console.log(
-      "voce perdeu pro " +
-        adversario.nome +
-        ", que tinha " +
-        adversario.media +
-        " de overall",
-    );
-  } else if (adversario.media == mediaOver) {
-    console.log(
-      "empatou com " +
-        adversario.nome +
-        ", que tinha " +
-        adversario.media +
-        " de overall",
-    );
-  } else {
+  if (vitoria) {
     console.log(
       "voce ganhou do " +
         adversario.nome +
@@ -320,7 +323,40 @@ function mostrarConsole() {
         adversario.media +
         " de overall",
     );
+  } else {
+    console.log(
+      "voce perdeu pro " +
+        adversario.nome +
+        ", que tinha " +
+        adversario.media +
+        " de overall",
+    );
   }
+  // if (adversario.media > mediaOver) {
+  //   console.log(
+  //     "voce perdeu pro " +
+  //       adversario.nome +
+  //       ", que tinha " +
+  //       adversario.media +
+  //       " de overall",
+  //   );
+  // } else if (adversario.media == mediaOver) {
+  //   console.log(
+  //     "empatou com " +
+  //       adversario.nome +
+  //       ", que tinha " +
+  //       adversario.media +
+  //       " de overall",
+  //   );
+  // } else {
+  //   console.log(
+  //     "voce ganhou do " +
+  //       adversario.nome +
+  //       ", que tinha " +
+  //       adversario.media +
+  //       " de overall",
+  //   );
+  // }
 }
 
 mostrarConsole();
