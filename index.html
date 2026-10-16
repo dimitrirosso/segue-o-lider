@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <section class="principal">
+      <div class="cabecalho">
+        <p class="inicio ativo">Ínicio</p>
+        <p class="time">Time</p>
+        <p class="partida">Partida</p>
+        <p class="tabela">Tabela</p>
+      </div>
+      <div class="container">
+        <h1>Segue o Líder</h1>
+        <p>
+          Monte seu time com lendas do futebol brasileiro, que vença a melhor
+          equipe!
+        </p>
+        <input type="text" placeholder="Nome do seu time" />
+        <button class="comecar">Começar</button>
+      </div>
+
+      <div class="container__time">
+        <div class="titulos">
+          <h1>Monte seu Time!</h1>
+          <p class="mensagem">Escolha 11 jogadores para continuar!</p>
+        </div>
+
+        <div class="montagem__time">
+          <div class="time__sorteado">
+            <p>Time sorteado:</p>
+            <h1></h1>
+          </div>
+
+          <div class="jogadores"></div>
+
+          <p class="seu__time">Seu Time:</p>
+          <div class="rodape__time"></div>
+
+          <div class="overall__time">
+            <p>Overall do seu Time:</p>
+            <h1>0</h1>
+          </div>
+
+          <button class="avancar" disabled>Avançar!</button>
+        </div>
+      </div>
+
+      <div class="container__partida">
+        <h1 class="resultado__titulo"></h1>
+        <p class="resultado__placar"></p>
+        <p class="resultado__detalhe"></p>
+        <button class="jogar__novamente">Jogar de novo</button>
+      </div>
+    </section>
+
+    <script src="script.js"></script>
+    <script src="front.js"></script>
+  </body>
+</html>

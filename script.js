@@ -1,6 +1,3 @@
-import promptSync from "prompt-sync";
-let prompt = promptSync();
-
 const bancoDeTimes = {
   fluminense2010: {
     nome: "Fluminense",
@@ -6888,8 +6885,20 @@ function escolhaJogador() {
 
   while (escalacao.length < 11) {
     let time = sorteiaTime();
-    console.log(time);
-    console.log(escalacao);
+
+    if (dificuldade == 1) {
+      console.log(time);
+      console.log(escalacao);
+    } else {
+      let jogadoresSemOverall = time.jogadores.map((jogador) => {
+        return {
+          id: jogador.id,
+          nome: jogador.nome,
+          posicao: jogador.posicao,
+        };
+      });
+      console.log(jogadoresSemOverall);
+    }
     let escolha = prompt("digite o ID do jogador: ");
 
     let jogadoreEscolhido = time.jogadores.find(
@@ -6946,7 +6955,11 @@ function timeContra() {
 
   let mediaContra = Math.round((def + mei + ata) / 3);
 
-  return { nome: adversario.nome, media: mediaContra };
+  return {
+    nome: adversario.nome,
+    media: mediaContra,
+    temporada: adversario.temporada,
+  };
 }
 
 function probabilidadeVitoria(overallTimeA, overallTimeB) {
@@ -6983,6 +6996,7 @@ function mostrarConsole() {
     console.log(
       "voce ganhou do " +
         adversario.nome +
+        adversario.temporada +
         ", que tinha " +
         adversario.media +
         " de overall",
@@ -6991,6 +7005,7 @@ function mostrarConsole() {
     console.log(
       "voce perdeu pro " +
         adversario.nome +
+        adversario.temporada +
         ", que tinha " +
         adversario.media +
         " de overall",
@@ -6998,4 +7013,4 @@ function mostrarConsole() {
   }
 }
 
-mostrarConsole();
+// mostrarConsole();
