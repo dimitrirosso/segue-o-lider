@@ -15,20 +15,50 @@ const rodapeTime = document.querySelector(".rodape__time");
 const overallTime = document.querySelector(".overall__time h1");
 const botaoAvancar = document.querySelector(".avancar");
 
-const resultadoTitulo = document.querySelector(".resultado__titulo");
-const resultadoPlacar = document.querySelector(".resultado__placar");
-const resultadoDetalhe = document.querySelector(".resultado__detalhe");
-const botaoNovamente = document.querySelector(".jogar__novamente");
+// elementos da partida
+const tempoPartida = document.querySelector(".tempo");
+const nomeCasa = document.querySelector(".nome__casa");
+const nomeFora = document.querySelector(".nome__fora");
+const placarCasa = document.querySelector(".placar__casa");
+const placarFora = document.querySelector(".placar__fora");
+const resultadoPlacar = document.querySelector(".resultado");
+const listaGols = document.querySelector(".gols");
+const botaoIniciar = document.querySelector(".jogar__partida");
 
 const mostrarOverall = true; // false = esconde o overall dos jogadores sorteados (modo difícil)
 
+// ajustes da simulação
+const MS_POR_MINUTO = 150; // 90 min ≈ 14 segundos. Aumente para ficar mais lento
+const MS_INTERVALO = 2000; // pausa do intervalo
+const GOLS_BASE = 1.4; // média de gols de um time equilibrado
+const FORCA = 0.03; // quanto a diferença de overall pesa
+
+const pesoPosicao = {
+  GOL: 0.02,
+  ZAG: 0.6,
+  DEF: 0.7,
+  LAT: 0.8,
+  VOL: 1,
+  MEI: 2.5,
+  ATA: 5,
+};
+
 let escalacao = [];
 let nomeTime = "";
+
+let mediaOver = 0;
+let adversario = null;
+let golsCasa = 0;
+let golsFora = 0;
+let partidaRolando = false;
+let partidaTerminou = false;
 
 function ativarAba(aba) {
   [abaInicio, abaTime, abaPartida].forEach((a) => a.classList.remove("ativo"));
   aba.classList.add("ativo");
 }
+
+/* ---------- ESCOLHA DO TIME ---------- */
 
 function mostrarOpcoes() {
   const time = sorteiaTime();
@@ -94,29 +124,141 @@ function escolherJogador(jogador) {
   }
 }
 
-function jogarPartida() {
+/* ---------- PARTIDA ---------- */
+
+// monta a tela da partida (antes de o jogo começar)
+function prepararPartida() {
   const ordemPosicoes = ["GOL", "ZAG", "LAT", "VOL", "MEI", "ATA"];
   escalacao.sort(
     (a, b) =>
       ordemPosicoes.indexOf(a.posicao) - ordemPosicoes.indexOf(b.posicao),
   );
 
-  const mediaOver = Math.round(calcMedia(escalacao));
-  const adversario = timeContra();
-  const vitoria = calculoProbabilidade(mediaOver, adversario.media);
+  mediaOver = Math.round(calcMedia(escalacao));
+  adversario = timeContra();
+
+  golsCasa = 0;
+  golsFora = 0;
+  partidaRolando = false;
+  partidaTerminou = false;
 
   containerTime.style.display = "none";
   containerPartida.style.display = "flex";
   ativarAba(abaPartida);
 
-  resultadoTitulo.textContent = vitoria
-    ? "Você ganhou! 🏆"
-    : "Você perdeu... 😢";
-  resultadoPlacar.textContent = `${nomeTime} (${mediaOver}) x ${adversario.nome} ${adversario.temporada ?? ""} (${adversario.media})`;
-  resultadoDetalhe.textContent = vitoria
-    ? `Seu time venceu o ${adversario.nome}, que tinha ${adversario.media} de overall.`
-    : `Seu time perdeu para o ${adversario.nome}, que tinha ${adversario.media} de overall.`;
+  nomeCasa.textContent = `${nomeTime}`;
+  nomeFora.textContent = `${adversario.nome} ${adversario.temporada ?? ""}`;
+  placarCasa.textContent = 0;
+  placarFora.textContent = 0;
+  tempoPartida.textContent = "Pré-jogo";
+  listaGols.innerHTML = "";
+
+  botaoIniciar.disabled = false;
+  botaoIniciar.textContent = "Iniciar Partida";
 }
+
+// chance de gol por minuto de cada time, baseada na diferença de overall
+function chancesDeGol() {
+  const diferenca = Math.max(-25, Math.min(25, mediaOver - adversario.media));
+
+  const golsEsperadosCasa = GOLS_BASE * Math.exp(FORCA * diferenca);
+  const golsEsperadosFora = GOLS_BASE * Math.exp(-FORCA * diferenca);
+
+  return { casa: golsEsperadosCasa / 90, fora: golsEsperadosFora / 90 };
+}
+
+// sorteia quem fez o gol: atacante tem mais chance, e overall maior também
+function sortearArtilheiro(jogadores) {
+  if (!jogadores || jogadores.length === 0) return null;
+
+  const pesos = jogadores.map(
+    (j) => (pesoPosicao[j.posicao] ?? 1) * Math.pow(j.overall / 80, 3),
+  );
+  const total = pesos.reduce((soma, p) => soma + p, 0);
+
+  let sorte = Math.random() * total;
+  for (let i = 0; i < jogadores.length; i++) {
+    sorte -= pesos[i];
+    if (sorte <= 0) return jogadores[i];
+  }
+  return jogadores[jogadores.length - 1];
+}
+
+function registrarGol(minuto, doMeuTime) {
+  const autor = sortearArtilheiro(doMeuTime ? escalacao : adversario.jogadores);
+  const clube = doMeuTime ? nomeTime : adversario.nome;
+  const nomeAutor = autor ? autor.nome : clube;
+
+  if (doMeuTime) {
+    golsCasa++;
+    placarCasa.textContent = golsCasa;
+  } else {
+    golsFora++;
+    placarFora.textContent = golsFora;
+  }
+
+  const linha = document.createElement("p");
+  linha.classList.add(doMeuTime ? "gol__nosso" : "gol__adversario");
+  linha.textContent = `${minuto}' ⚽ Gol!! ${nomeAutor} (${clube})`;
+  listaGols.appendChild(linha);
+
+  // animação rápida no placar
+  resultadoPlacar.classList.add("pulsar");
+  setTimeout(() => resultadoPlacar.classList.remove("pulsar"), 600);
+}
+
+function fimDeJogo() {
+  let texto = "Empate!";
+  if (golsCasa > golsFora) texto = "Você ganhou!";
+  if (golsCasa < golsFora) texto = "Você perdeu!";
+
+  tempoPartida.textContent = `Fim de jogo - ${texto}`;
+
+  partidaRolando = false;
+  partidaTerminou = true;
+  botaoIniciar.disabled = false;
+  botaoIniciar.textContent = "Jogar de novo";
+}
+
+function iniciarPartida() {
+  if (partidaTerminou) {
+    location.reload();
+    return;
+  }
+  if (partidaRolando) return;
+
+  partidaRolando = true;
+  botaoIniciar.disabled = true;
+  botaoIniciar.textContent = "Bola rolando...";
+
+  const chances = chancesDeGol();
+  let minuto = 0;
+
+  function passarMinuto() {
+    minuto++;
+    tempoPartida.textContent = `${minuto}' - bola rolando`;
+
+    if (Math.random() < chances.casa) registrarGol(minuto, true);
+    if (Math.random() < chances.fora) registrarGol(minuto, false);
+
+    if (minuto === 45) {
+      tempoPartida.textContent = "Intervalo";
+      setTimeout(passarMinuto, MS_INTERVALO);
+      return;
+    }
+
+    if (minuto >= 90) {
+      fimDeJogo();
+      return;
+    }
+
+    setTimeout(passarMinuto, MS_POR_MINUTO);
+  }
+
+  passarMinuto();
+}
+
+/* ---------- EVENTOS ---------- */
 
 botaoComecar.addEventListener("click", () => {
   nomeTime = inputNome.value.trim() || "Meu Time";
@@ -130,5 +272,5 @@ botaoComecar.addEventListener("click", () => {
   mostrarOpcoes();
 });
 
-botaoAvancar.addEventListener("click", jogarPartida);
-botaoNovamente.addEventListener("click", () => location.reload());
+botaoAvancar.addEventListener("click", prepararPartida);
+botaoIniciar.addEventListener("click", iniciarPartida);

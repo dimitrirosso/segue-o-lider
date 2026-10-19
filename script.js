@@ -6959,6 +6959,7 @@ function timeContra() {
     nome: adversario.nome,
     media: mediaContra,
     temporada: adversario.temporada,
+    jogadores: adversario.jogadores,
   };
 }
 
