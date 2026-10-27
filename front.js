@@ -27,11 +27,16 @@ const botaoIniciar = document.querySelector(".jogar__partida");
 
 const mostrarOverall = true; // false = esconde o overall dos jogadores sorteados (modo difícil)
 
+const apitoFinal = new Audio("audio-apito.mp3");
+const musica = new Audio("audio-gremio.mp3");
+musica.volume = 0.2; // 0 a 1
+
 // ajustes da simulação
 const MS_POR_MINUTO = 150; // 90 min ≈ 14 segundos. Aumente para ficar mais lento
 const MS_INTERVALO = 2000; // pausa do intervalo
 const GOLS_BASE = 1.4; // média de gols de um time equilibrado
 const FORCA = 0.03; // quanto a diferença de overall pesa
+const ordemPosicoes = ["GOL", "ZAG", "LAT", "VOL", "MEI", "ATA"];
 
 const pesoPosicao = {
   GOL: 0.02,
@@ -78,7 +83,15 @@ function mostrarOpcoes() {
   });
 }
 
+function ordenarEscalacao() {
+  escalacao.sort(
+    (a, b) =>
+      ordemPosicoes.indexOf(a.posicao) - ordemPosicoes.indexOf(b.posicao),
+  );
+}
+
 function mostrarEscalacao() {
+  ordenarEscalacao();
   rodapeTime.innerHTML = "";
 
   escalacao.forEach((jogador) => {
@@ -128,12 +141,6 @@ function escolherJogador(jogador) {
 
 // monta a tela da partida (antes de o jogo começar)
 function prepararPartida() {
-  const ordemPosicoes = ["GOL", "ZAG", "LAT", "VOL", "MEI", "ATA"];
-  escalacao.sort(
-    (a, b) =>
-      ordemPosicoes.indexOf(a.posicao) - ordemPosicoes.indexOf(b.posicao),
-  );
-
   mediaOver = Math.round(calcMedia(escalacao));
   adversario = timeContra();
 
@@ -208,6 +215,9 @@ function registrarGol(minuto, doMeuTime) {
 }
 
 function fimDeJogo() {
+  musica.pause();
+  musica.currentTime = 0;
+  apitoFinal.play();
   let texto = "Empate!";
   if (golsCasa > golsFora) texto = "Você ganhou!";
   if (golsCasa < golsFora) texto = "Você perdeu!";
@@ -228,6 +238,7 @@ function iniciarPartida() {
   if (partidaRolando) return;
 
   partidaRolando = true;
+  musica.play();
   botaoIniciar.disabled = true;
   botaoIniciar.textContent = "Bola rolando...";
 
