@@ -286,3 +286,51 @@ button:disabled {
 .gol__adversario {
   color: #a32222;
 }
+
+th {
+  padding: 10px;
+  border: 1px solid #a1a1a1;
+}
+
+td {
+  border: 1px solid #e6e3cd;
+  padding: 4px 8px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+td:nth-child(2) {
+  text-align: left;
+}
+
+.partes__tabela {
+  display: flex;
+  font-size: 18px;
+  gap: 30px;
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+
+.primeira_metade,
+.segunda_metade {
+  flex: 1;
+  min-width: 0;
+}
+
+.primeira_metade table,
+.segunda_metade table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.container__tabela {
+  display: none;
+  width: 60%;
+  max-width: 1200px;
+  margin-top: 30px;
+}
+
+.principal {
+  min-height: 100vh;
+  height: auto;
+}

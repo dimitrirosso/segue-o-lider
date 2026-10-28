@@ -25,6 +25,13 @@ const resultadoPlacar = document.querySelector(".resultado");
 const listaGols = document.querySelector(".gols");
 const botaoIniciar = document.querySelector(".jogar__partida");
 
+const containerTabela = document.querySelector(".container__tabela");
+const abaTabela = document.querySelector(".cabecalho .tabela"); // escopo no cabeçalho, porque existe outra .tabela no HTML
+const botaoProximaPartida = document.querySelector(".jogar__proxima__partida");
+const tituloTabela = document.querySelector(".container__tabela .titulos p");
+const corpoMetade1 = document.getElementById("tabela-1");
+const corpoMetade2 = document.getElementById("tabela-2");
+
 const mostrarOverall = true; // false = esconde o overall dos jogadores sorteados (modo difícil)
 
 const apitoFinal = new Audio("audio-apito.mp3");
@@ -58,8 +65,203 @@ let golsFora = 0;
 let partidaRolando = false;
 let partidaTerminou = false;
 
+// ---------- CAMPEONATO ----------
+const TOTAL_TIMES = 20;
+const TOTAL_RODADAS = TOTAL_TIMES - 1; // 19: todos contra todos, 1 turno
+let totalRodadas = TOTAL_RODADAS;
+let rodadaAtual = 0;
+let campeonato = []; // 20 times; índice 0 = o seu time
+let calendario = []; // calendario[r] = lista de jogos [indiceA, indiceB]
+
+function embaralhar(lista) {
+  const copia = [...lista];
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia;
+}
+
+function mediaDoTime(time) {
+  const [{ def, mei, ata }] = time.overTime;
+  return Math.round((def + mei + ata) / 3);
+}
+
+function novoRegistro(nome, media, extra = {}) {
+  return {
+    nome,
+    media,
+    pontos: 0,
+    j: 0,
+    v: 0,
+    e: 0,
+    d: 0,
+    gp: 0,
+    gc: 0,
+    ...extra,
+  };
+}
+
+// método do círculo: o índice 0 fica parado e os outros giram
+function montarCalendario(n) {
+  const idx = Array.from({ length: n }, (_, i) => i);
+  const rodadas = [];
+
+  for (let r = 0; r < n - 1; r++) {
+    const jogos = [];
+    for (let i = 0; i < n / 2; i++) {
+      jogos.push([idx[i], idx[n - 1 - i]]);
+    }
+    rodadas.push(jogos);
+    idx.splice(1, 0, idx.pop());
+  }
+  return rodadas;
+}
+
+function iniciarCampeonato() {
+  if (!times || times.length < TOTAL_TIMES - 1) {
+    throw new Error("O array 'times' precisa ter pelo menos 19 times.");
+  }
+
+  const sorteados = embaralhar(times).slice(0, TOTAL_TIMES - 1);
+
+  campeonato = [
+    novoRegistro(nomeTime, mediaOver, { ehUsuario: true }),
+    ...sorteados.map((t) =>
+      novoRegistro(t.nome, mediaDoTime(t), {
+        temporada: t.temporada,
+        jogadores: t.jogadores,
+      }),
+    ),
+  ];
+
+  calendario = montarCalendario(TOTAL_TIMES);
+  rodadaAtual = 0;
+  totalRodadas = TOTAL_RODADAS;
+}
+
+// adversário do seu time na rodada atual, segundo o calendário
+function proximoAdversario() {
+  const jogo = calendario[rodadaAtual - 1].find(([a, b]) => a === 0 || b === 0);
+  const idx = jogo[0] === 0 ? jogo[1] : jogo[0];
+  return campeonato[idx]; // já tem nome, media, temporada e jogadores
+}
+
+/* ---------- SIMULAÇÃO DOS OUTROS JOGOS ---------- */
+
+function poisson(media) {
+  const limite = Math.exp(-media);
+  let k = 0;
+  let p = 1;
+  do {
+    k++;
+    p *= Math.random();
+  } while (p > limite);
+  return k - 1;
+}
+
+// mesma lógica da sua partida: diferença de overall muda a média de gols
+function simularPlacar(mediaA, mediaB) {
+  const diferenca = Math.max(-25, Math.min(25, mediaA - mediaB));
+  const esperadosA = GOLS_BASE * Math.exp(FORCA * diferenca);
+  const esperadosB = GOLS_BASE * Math.exp(-FORCA * diferenca);
+  return [poisson(esperadosA), poisson(esperadosB)];
+}
+
+function aplicarResultado(a, b, golsA, golsB) {
+  a.j++;
+  b.j++;
+  a.gp += golsA;
+  a.gc += golsB;
+  b.gp += golsB;
+  b.gc += golsA;
+
+  if (golsA > golsB) {
+    a.v++;
+    a.pontos += 3;
+    b.d++;
+  } else if (golsA < golsB) {
+    b.v++;
+    b.pontos += 3;
+    a.d++;
+  } else {
+    a.e++;
+    b.e++;
+    a.pontos++;
+    b.pontos++;
+  }
+}
+
+// registra o seu jogo e simula os outros 9 da rodada
+function fecharRodada() {
+  calendario[rodadaAtual - 1].forEach(([i, j]) => {
+    if (i === 0 || j === 0) return;
+    const [golsA, golsB] = simularPlacar(
+      campeonato[i].media,
+      campeonato[j].media,
+    );
+    aplicarResultado(campeonato[i], campeonato[j], golsA, golsB);
+  });
+
+  aplicarResultado(campeonato[0], adversario, golsCasa, golsFora);
+}
+
+function classificacao() {
+  return [...campeonato].sort(
+    (a, b) =>
+      b.pontos - a.pontos ||
+      b.v - a.v ||
+      b.gp - b.gc - (a.gp - a.gc) ||
+      b.gp - a.gp,
+  );
+}
+
+/* ---------- TABELA ---------- */
+
+function linhaTabela(time, posicao) {
+  const sg = time.gp - time.gc;
+  const nome = `${time.nome} ${time.temporada ?? ""}`.trim();
+  return `
+    <tr class="${time.ehUsuario ? "linha__usuario" : ""}">
+      <td>${posicao}</td>
+      <td>${nome}</td>
+      <td>${time.pontos}</td>
+      <td>${time.j}</td>
+      <td>${time.v}</td>
+      <td>${time.e}</td>
+      <td>${time.d}</td>
+      <td>${sg > 0 ? "+" : ""}${sg}</td>
+    </tr>`;
+}
+
+function renderizarTabela() {
+  const ordenados = classificacao();
+  const linhas = ordenados.map((t, i) => linhaTabela(t, i + 1));
+
+  corpoMetade1.innerHTML = linhas.slice(0, 10).join("");
+  corpoMetade2.innerHTML = linhas.slice(10).join("");
+
+  if (rodadaAtual < totalRodadas) {
+    tituloTabela.textContent = `Após a rodada ${rodadaAtual}`;
+    botaoProximaPartida.textContent = "Iniciar próxima partida";
+  } else {
+    const posicao = ordenados.findIndex((t) => t.ehUsuario) + 1;
+    tituloTabela.textContent = `Fim do campeonato! Você terminou em ${posicao}º lugar`;
+    botaoProximaPartida.textContent = "Novo campeonato";
+  }
+}
+
+function mostrarTabela() {
+  containerPartida.style.display = "none";
+  containerTabela.style.display = "block";
+  ativarAba(abaTabela);
+  renderizarTabela();
+}
+
 function ativarAba(aba) {
-  [abaInicio, abaTime, abaPartida].forEach((a) => a.classList.remove("ativo"));
+  [abaInicio, abaTime, abaPartida, abaTabela].forEach((a) =>
+    a.classList.remove("ativo"),
+  );
   aba.classList.add("ativo");
 }
 
@@ -142,7 +344,9 @@ function escolherJogador(jogador) {
 // monta a tela da partida (antes de o jogo começar)
 function prepararPartida() {
   mediaOver = Math.round(calcMedia(escalacao));
-  adversario = timeContra();
+  if (rodadaAtual === 0) iniciarCampeonato();
+  rodadaAtual++;
+  adversario = proximoAdversario();
 
   golsCasa = 0;
   golsFora = 0;
@@ -150,6 +354,7 @@ function prepararPartida() {
   partidaTerminou = false;
 
   containerTime.style.display = "none";
+  containerTabela.style.display = "none";
   containerPartida.style.display = "flex";
   ativarAba(abaPartida);
 
@@ -218,21 +423,24 @@ function fimDeJogo() {
   musica.pause();
   musica.currentTime = 0;
   apitoFinal.play();
+
   let texto = "Empate!";
   if (golsCasa > golsFora) texto = "Você ganhou!";
-  if (golsCasa < golsFora) texto = "Você perdeu!";
+  else if (golsCasa < golsFora) texto = "Você perdeu!";
 
-  tempoPartida.textContent = `Fim de jogo - ${texto}`;
+  fecharRodada(); // atualiza você + simula os outros jogos
 
   partidaRolando = false;
   partidaTerminou = true;
   botaoIniciar.disabled = false;
-  botaoIniciar.textContent = "Jogar de novo";
+
+  tempoPartida.textContent = `Fim de jogo - ${texto}`;
+  botaoIniciar.textContent = "Ver tabela";
 }
 
 function iniciarPartida() {
   if (partidaTerminou) {
-    location.reload();
+    mostrarTabela();
     return;
   }
   if (partidaRolando) return;
@@ -281,6 +489,14 @@ botaoComecar.addEventListener("click", () => {
 
   mostrarEscalacao();
   mostrarOpcoes();
+});
+
+botaoProximaPartida.addEventListener("click", () => {
+  if (rodadaAtual < totalRodadas) {
+    prepararPartida();
+  } else {
+    location.reload(); // campeonato acabou
+  }
 });
 
 botaoAvancar.addEventListener("click", prepararPartida);
