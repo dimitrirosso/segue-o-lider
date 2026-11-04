@@ -333,6 +333,12 @@ td:nth-child(2) {
 .principal {
   min-height: 100vh;
   height: auto;
+  touch-action: none;
+}
+
+html,
+body {
+  touch-action: manipulation; /* bloqueia o zoom de toque duplo */
 }
 
 @media (max-width: 840px) {
