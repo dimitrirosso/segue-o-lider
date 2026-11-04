@@ -334,3 +334,248 @@ td:nth-child(2) {
   min-height: 100vh;
   height: auto;
 }
+
+@media (max-width: 840px) {
+  body {
+    overflow-x: hidden;
+  }
+  .cabecalho {
+    gap: 20px;
+  }
+
+  .cabecalho p {
+    padding: 0px 10px 2px;
+    font-size: 20px;
+  }
+
+  .container {
+    width: 80%;
+    height: 10%;
+    padding: 30px;
+    gap: 20px;
+  }
+
+  .container h1 {
+    font-size: 60px;
+  }
+
+  .container p {
+    font-size: 20px;
+  }
+
+  .container input {
+    padding: 8px 12px;
+    width: 80%;
+  }
+
+  .container button {
+    width: 60%;
+  }
+
+  .container__time {
+    margin-top: 20px;
+    width: 80%;
+    height: 85%;
+    align-items: flex-start;
+    padding: 0 10px 0 0px;
+    gap: 10px;
+  }
+
+  .titulos {
+    align-items: flex-start;
+    width: 500px;
+  }
+
+  .titulos h1 {
+    font-size: 30px;
+  }
+
+  .titulos p {
+    font-size: 15px;
+  }
+
+  .time__sorteado {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: rgb(246, 243, 243);
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #007c02;
+  }
+
+  .time__sorteado p {
+    font-size: 14px;
+  }
+
+  .time__sorteado h1 {
+    font-size: 20px;
+  }
+
+  .jogadores {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 10px;
+    gap: 8px;
+  }
+
+  .jogador {
+    background-color: rgb(246, 243, 243);
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    border-radius: 8px;
+    border: 1px solid #007c02;
+    cursor: pointer;
+  }
+
+  .jogador p {
+    font-size: 14px;
+  }
+
+  .jogador span {
+    font-size: 15px;
+  }
+
+  .jogador strong {
+    font-size: 10px;
+  }
+
+  .rodape__time {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .jogador__escolhido {
+    background-color: #015502;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    color: white;
+  }
+
+  .jogador__escolhido span {
+    font-size: 15px;
+  }
+
+  .seu__time {
+    margin-top: 10px;
+    font-size: 18px;
+  }
+
+  .overall__time {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  .overall__time p {
+    font-size: 20px;
+  }
+
+  .overall__time h1 {
+    font-size: 50px;
+  }
+
+  button {
+    width: 300px;
+    padding: 14px;
+    margin-top: 10px;
+    font-size: 20px;
+    border-radius: 10px;
+    border: none;
+    background-color: #e8c22a;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .container__partida {
+    width: 100%;
+    margin-top: 30px;
+    padding: 15px;
+    display: none;
+    flex-direction: column;
+    margin-bottom: 200px;
+  }
+
+  .placar {
+    background-color: beige;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    gap: 10px;
+    margin-top: 20px;
+    border-radius: 20px;
+    border: 1px solid #171d17;
+    width: 100%;
+    height: 100px;
+    padding: 12%;
+  }
+
+  .resultado {
+    display: flex;
+    height: 150px;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    gap: 20px;
+  }
+
+  .gols {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 30px;
+    font-size: 17px;
+  }
+
+  .gols p {
+    border-bottom: 1px solid #000000;
+  }
+
+  .partes__tabela {
+    flex-direction: column;
+    gap: 0;
+    font-size: 12px;
+  }
+
+  .partes__tabela table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .partes__tabela th,
+  .partes__tabela td {
+    padding: 8px 4px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12); /* linha separando cada time */
+  }
+
+  .partes__tabela th:nth-child(2),
+  .partes__tabela td:nth-child(2) {
+    width: 37%;
+    text-align: left;
+    padding-left: 6px;
+    padding-right: 10px;
+  }
+
+  .segunda_metade thead {
+    display: none;
+  }
+
+  .container__tabela {
+    width: 80%;
+  }
+
+  .jogar__proxima__partida {
+    margin-bottom: 20px;
+    margin-left: 5%;
+  }
+}
