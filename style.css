@@ -336,11 +336,6 @@ td:nth-child(2) {
   touch-action: none;
 }
 
-html,
-body {
-  touch-action: manipulation; /* bloqueia o zoom de toque duplo */
-}
-
 @media (max-width: 840px) {
   body {
     overflow-x: hidden;
