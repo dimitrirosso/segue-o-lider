@@ -333,7 +333,6 @@ td:nth-child(2) {
 .principal {
   min-height: 100vh;
   height: auto;
-  touch-action: none;
 }
 
 @media (max-width: 840px) {
