@@ -17,6 +17,7 @@ body {
   justify-content: center;
   height: 100vh;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 .cabecalho {
@@ -376,7 +377,6 @@ td:nth-child(2) {
     align-items: flex-start;
     padding: 0 10px 0 0px;
     gap: 10px;
-    overflow: hidden;
   }
 
   .titulos {
