@@ -337,9 +337,6 @@ td:nth-child(2) {
 }
 
 @media (max-width: 840px) {
-  body {
-    overflow-x: hidden;
-  }
   .cabecalho {
     gap: 20px;
   }
